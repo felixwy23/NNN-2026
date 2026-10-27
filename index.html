@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Nut November 2026</title>
+<style>
+  :root{
+    --bg:#0e0f16;
+    --panel:#1a1c28;
+    --panel2:#222534;
+    --line:#2e3244;
+    --text:#e8eaf2;
+    --muted:#8a90a8;
+    --accent:#ff5c7a;
+    --accent2:#7c5cff;
+    --fail:#ff5c5c;
+    --ok:#4ade80;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(1200px 600px at 50% -10%, #1b1e30 0%, var(--bg) 55%);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    min-height:100vh;
+    padding:24px 16px 48px;
+  }
+  .wrap{max-width:960px;margin:0 auto;}
+
+  /* 标题 */
+  header{text-align:center;margin-bottom:20px;}
+  header h1{
+    margin:0;
+    font-size:clamp(26px,6vw,44px);
+    font-weight:900;
+    letter-spacing:.5px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  header .sub{color:var(--muted);margin-top:8px;font-size:14px;}
+
+  /* 未配置提示条 */
+  .notice{
+    background:rgba(255,92,122,.12);
+    border:1px solid rgba(255,92,122,.45);
+    color:#ffb3c1;
+    border-radius:12px;
+    padding:14px 16px;
+    font-size:14px;
+    line-height:1.6;
+    margin-bottom:18px;
+  }
+  .notice code{background:rgba(0,0,0,.35);padding:2px 6px;border-radius:6px;font-size:13px;}
+
+  /* 成员条 */
+  .members{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
+  .chip{
+    display:flex;align-items:center;gap:8px;
+    background:var(--panel2);border:1px solid var(--line);
+    padding:8px 12px;border-radius:999px;font-size:14px;
+  }
+  .chip .dot{width:12px;height:12px;border-radius:50%;flex:none;}
+  .chip .name{font-weight:600;}
+  .chip .stat{color:var(--muted);font-size:12px;}
+  .chip .stat b.ok{color:var(--ok);font-weight:700;}
+  .chip .stat b.fail{color:var(--fail);font-weight:700;}
+  .chip button{
+    border:none;background:transparent;color:var(--muted);
+    cursor:pointer;font-size:13px;padding:2px 4px;border-radius:6px;line-height:1;
+  }
+  .chip button:hover{color:var(--text);background:rgba(255,255,255,.08);}
+  .add-chip{
+    display:flex;align-items:center;gap:6px;
+    background:transparent;border:1px dashed var(--line);
+    color:var(--muted);padding:8px 14px;border-radius:999px;
+    font-size:14px;cursor:pointer;
+  }
+  .add-chip:hover{color:var(--text);border-color:var(--accent);}
+
+  /* 图例 */
+  .legend{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:16px;font-size:13px;color:var(--muted);}
+  .legend .item{display:flex;align-items:center;gap:6px;}
+  .mini{width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;flex:none;}
+  .mini.done{background:var(--accent);color:#fff;border:2px solid var(--accent);}
+  .mini.fail{border:2px solid var(--accent);color:var(--fail);}
+  .mini.none{border:2px solid var(--accent);color:transparent;}
+
+  /* 日历 */
+  .cal{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;}
+  .cal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:8px;text-align:center;color:var(--muted);font-size:12px;font-weight:600;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+  .day{
+    background:var(--panel2);border:1px solid var(--line);border-radius:12px;
+    padding:8px 6px;min-height:92px;display:flex;flex-direction:column;
+  }
+  .day .num{font-size:13px;font-weight:700;color:var(--muted);text-align:center;}
+  .day .marks{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;align-items:center;margin-top:6px;flex:1;}
+  .day.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 18px rgba(255,92,122,.25);}
+  .day.today .num{color:var(--accent);}
+  .day.empty{background:transparent;border:none;}
+  .day:hover{border-color:#3c415a;}
+
+  .udot{
+    width:24px;height:24px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:800;cursor:pointer;flex:none;
+    border:2px solid var(--uc,#888);
+    background:transparent;color:transparent;
+    transition:transform .08s ease,background .12s ease;
+    user-select:none;
+  }
+  .udot:active{transform:scale(.86);}
+  .udot.state-done{background:var(--uc);color:#fff;}
+  .udot.state-fail{color:var(--fail);border-style:dashed;}
+  .udot.state-none{color:transparent;}
+
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:22px;line-height:1.8;}
+
+  /* 弹窗 */
+  .mask{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50;padding:16px;}
+  .mask.show{display:flex;}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;width:100%;max-width:360px;}
+  .modal h3{margin:0 0 16px;font-size:18px;}
+  .modal label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;}
+  .modal input[type=text]{
+    width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);
+    background:var(--panel2);color:var(--text);font-size:15px;margin-bottom:16px;outline:none;
+  }
+  .modal input[type=text]:focus{border-color:var(--accent);}
+  .swatches{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .sw{
+    width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;
+  }
+  .sw.sel{border-color:#fff;box-shadow:0 0 0 2px var(--accent);}
+  .color-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-bottom:18px;}
+  .color-row input[type=color]{width:40px;height:28px;border:none;background:none;cursor:pointer;padding:0;}
+  .modal .btns{display:flex;gap:10px;justify-content:flex-end;}
+  .btn{border:none;border-radius:10px;padding:9px 16px;font-size:14px;cursor:pointer;font-weight:600;}
+  .btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;}
+  .btn.ghost{background:var(--panel2);color:var(--muted);border:1px solid var(--line);}
+  .btn.ghost:hover{color:var(--text);}
+
+  .toast{
+    position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);
+    background:#11131f;border:1px solid var(--line);color:var(--text);
+    padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;
+    transition:opacity .2s ease,transform .2s ease;z-index:100;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:600px){
+    body{padding:16px 8px 40px;}
+    .cal{padding:8px;border-radius:12px;}
+    .cal-head,.cal-grid{gap:4px;}
+    .day{padding:5px 3px;min-height:70px;border-radius:9px;}
+    .day .num{font-size:11px;}
+    .day .marks{gap:3px;}
+    .udot{width:20px;height:20px;font-size:11px;border-width:2px;}
+    .chip{padding:6px 10px;font-size:13px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>No Nut November 2026</h1>
+    <div class="sub">十一月挑战日历 · 三人同行 · 每日打卡</div>
+  </header>
+
+  <div class="notice" id="notice" style="display:none;">
+    ⚠️ 尚未连接数据库。请打开 <b>index.html</b>，把文件顶部 <code>FIREBASE_URL</code> 改成你自己的
+    Realtime Database 网址（见《部署说明》），再通过公开网址访问。
+  </div>
+
+  <div class="members" id="members"></div>
+
+  <div class="legend">
+    <span class="item"><span class="mini done">✓</span> 做到</span>
+    <span class="item"><span class="mini fail">✗</span> 没做到</span>
+    <span class="item"><span class="mini none">·</span> 未记录</span>
+    <span class="item" style="color:var(--text);">点击自己颜色的圆点，在「空 → ✓ → ✗」之间切换</span>
+  </div>
+
+  <div class="cal">
+    <div class="cal-head" id="calHead"></div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+
+  <footer>
+    数据实时保存在云端，三人打开同一网址看到的是同一份记录。<br>
+    提示：点自己名字旁的「✎」改名或换颜色，「＋」添加成员。
+  </footer>
+</div>
+
+<!-- 添加/编辑成员弹窗 -->
+<div class="mask" id="mask">
+  <div class="modal">
+    <h3 id="modalTitle">添加成员</h3>
+    <label>姓名</label>
+    <input type="text" id="nameInput" placeholder="例如：小明" maxlength="20">
+    <label>选择颜色</label>
+    <div class="swatches" id="swatches"></div>
+    <div class="color-row">
+      自定义颜色
+      <input type="color" id="colorInput" value="#ff6b6b">
+      <span id="colorPreview" style="width:22px;height:22px;border-radius:50%;background:#ff6b6b;display:inline-block;"></span>
+    </div>
+    <div class="btns">
+      <button class="btn ghost" id="cancelBtn">取消</button>
+      <button class="btn primary" id="saveBtn">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // =====================================================================
+  //  ★★★ 只改这一行：把引号里的内容替换成你自己的 Realtime Database 网址 ★★★
+  //  形如：https://你的项目ID-default-rtdb.firebaseio.com/  （注意结尾的 /）
+  // =====================================================================
+  const FIREBASE_URL = "https://nnn-2026-default-rtdb.asia-southeast1.firebasedatabase.app/";
+
+  const YEAR = 2026, MONTH = 10; // 11 月（0 起）
+  const REFRESH_MS = 3000;
+  const WEEK = ["日","一","二","三","四","五","六"];
+
+  // 初始三位成员（首次打开数据库为空时自动写入，之后可改名换色）
+  const DEFAULT_USERS = {
+    u1:{name:"成员 1",color:"#ff6b6b"},
+    u2:{name:"成员 2",color:"#4dabf7"},
+    u3:{name:"成员 3",color:"#51cf66"}
+  };
+  const PRESET_COLORS = ["#ff6b6b","#ff922b","#ffd43b","#51cf66","#22b8cf","#4dabf7","#b197fc","#f783ac"];
+
+  let state = { users:{}, marks:{} };
+  let lastServerJson = "";
+  const pending = new Set();
+  let editingUid = null;
+  let selectedColor = PRESET_COLORS[0];
+
+  const $ = id => document.getElementById(id);
+  const pad = n => String(n).padStart(2,"0");
+  const dateKey = day => `${YEAR}-${pad(MONTH+1)}-${pad(day)}`;
+
+  // ---------- 网络 ----------
+  async function fetchJson(path){
+    const r = await fetch(FIREBASE_URL + path + ".json");
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  }
+  async function patch(path, obj){
+    const r = await fetch(FIREBASE_URL + path + ".json", {
+      method:"PATCH",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(obj)
+    });
+    if(!r.ok) throw new Error("HTTP " + r.status);
+  }
+
+  // ---------- 状态 ----------
+  function statusOf(uid, dkey){
+    return (state.marks[dkey] && state.marks[dkey][uid]) || null; // 'done' | 'fail' | null
+  }
+  function cycle(s){ return s === "done" ? "fail" : s === "fail" ? null : "done"; }
+
+  // ---------- 渲染 ----------
+  function render(){
+    renderMembers();
+    renderCalendar();
+  }
+
+  function renderMembers(){
+    const box = $("members");
+    const users = state.users || {};
+    const ids = Object.keys(users);
+    box.innerHTML = "";
+
+    ids.forEach(uid=>{
+      const u = users[uid];
+      let done=0, fail=0;
+      const days = new Date(YEAR, MONTH+1, 0).getDate();
+      for(let d=1; d<=days; d++){
+        const s = statusOf(uid, dateKey(d));
+        if(s==="done") done++; else if(s==="fail") fail++;
+      }
+      const chip = document.createElement("div");
+      chip.className = "chip";
+      chip.innerHTML =
+        `<span class="dot" style="background:${u.color}"></span>` +
+        `<span class="name">${escapeHtml(u.name)}</span>` +
+        `<span class="stat"><b class="ok">✓${done}</b> / <b class="fail">✗${fail}</b></span>` +
+        `<button title="编辑" data-act="edit" data-uid="${uid}">✎</button>` +
+        `<button title="删除" data-act="del" data-uid="${uid}">✕</button>`;
+      box.appendChild(chip);
+    });
+
+    const add = document.createElement("button");
+    add.className = "add-chip";
+    add.innerHTML = "＋ 添加成员";
+    add.onclick = ()=>openModal();
+    box.appendChild(add);
+  }
+
+  function renderCalendar(){
+    $("calHead").innerHTML = WEEK.map(w=>`<span>${w}</span>`).join("");
+
+    const grid = $("calGrid");
+    grid.innerHTML = "";
+    const firstDay = new Date(YEAR, MONTH, 1).getDay();   // 0=周日
+    const days = new Date(YEAR, MONTH+1, 0).getDate();    // 30
+
+    for(let i=0;i<firstDay;i++){
+      grid.appendChild(el("div","day empty"));
+    }
+
+    const today = new Date();
+    const isToday = d => today.getFullYear()===YEAR && today.getMonth()===MONTH && today.getDate()===d;
+
+    for(let d=1; d<=days; d++){
+      const dkey = dateKey(d);
+      const cell = el("div", "day" + (isToday(d)?" today":""));
+      cell.innerHTML = `<div class="num">${d}</div>`;
+
+      const marks = el("div","marks");
+      Object.keys(state.users).forEach(uid=>{
+        const u = state.users[uid];
+        const s = statusOf(uid, dkey);
+        const cls = s==="done" ? "state-done" : s==="fail" ? "state-fail" : "state-none";
+        const txt = s==="done" ? "✓" : s==="fail" ? "✗" : "·";
+        const tip = `${u.name} · 11月${d}日 · ` + (s==="done"?"已做到":s==="fail"?"没做到":"未记录（点击切换）");
+        const dot = el("span", `udot ${cls}`);
+        dot.style.setProperty("--uc", u.color);
+        dot.textContent = txt;
+        dot.title = tip;
+        dot.onclick = ()=>clickDot(uid, dkey);
+        marks.appendChild(dot);
+      });
+      cell.appendChild(marks);
+      grid.appendChild(cell);
+    }
+  }
+
+  function el(tag, cls){
+    const e = document.createElement(tag);
+    if(cls) e.className = cls;
+    return e;
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---------- 打卡 ----------
+  function clickDot(uid, dkey){
+    if(!FIREBASE_URL){ toast("请先配置数据库网址（见顶部提示）"); return; }
+    const cur = statusOf(uid, dkey);
+    const next = cycle(cur);
+
+    if(!state.marks[dkey]) state.marks[dkey] = {};
+    if(next === null) delete state.marks[dkey][uid];
+    else state.marks[dkey][uid] = next;
+    render();
+
+    const k = dkey + "|" + uid;
+    pending.add(k);
+    patch(`marks/${dkey}`, { [uid]: next ?? null })
+      .then(()=>pending.delete(k))
+      .catch(()=>{ pending.delete(k); toast("保存失败，请检查网络"); load(); });
+  }
+
+  // ---------- 成员增删改 ----------
+  function openModal(uid){
+    editingUid = uid || null;
+    $("modalTitle").textContent = uid ? "编辑成员" : "添加成员";
+    const u = uid ? state.users[uid] : null;
+    $("nameInput").value = u ? u.name : "";
+    selectedColor = u ? u.color : PRESET_COLORS[Math.floor(Math.random()*PRESET_COLORS.length)];
+    $("colorInput").value = selectedColor;
+    updateSwatchSel();
+    $("colorPreview").style.background = selectedColor;
+    $("mask").classList.add("show");
+    $("nameInput").focus();
+  }
+  function saveModal(){
+    const name = $("nameInput").value.trim() || "未命名";
+    const color = selectedColor;
+    if(!FIREBASE_URL){ toast("请先配置数据库网址"); return; }
+    if(editingUid){
+      state.users[editingUid] = { name, color };
+      patch(`users/${editingUid}`, { name, color })
+        .then(render)
+        .catch(()=>toast("保存失败"));
+    } else {
+      const uid = "u" + Date.now().toString(36);
+      state.users[uid] = { name, color };
+      patch(`users/${uid}`, { name, color })
+        .then(render)
+        .catch(()=>toast("保存失败"));
+    }
+    $("mask").classList.remove("show");
+  }
+  function deleteUser(uid){
+    const u = state.users[uid];
+    if(!confirm(`确定删除「${u.name}」吗？\n（历史打卡会保留，但不再显示）`)) return;
+    delete state.users[uid];
+    patch(`users/${uid}`, null)
+      .then(render)
+      .catch(()=>toast("删除失败"));
+  }
+
+  // ---------- 弹窗颜色 ----------
+  function buildSwatches(){
+    const box = $("swatches");
+    box.innerHTML = "";
+    PRESET_COLORS.forEach(c=>{
+      const s = el("div","sw");
+      s.style.background = c;
+      s.dataset.color = c;
+      s.onclick = ()=>{ selectedColor=c; $("colorInput").value=c; updateSwatchSel(); $("colorPreview").style.background=c; };
+      box.appendChild(s);
+    });
+  }
+  function updateSwatchSel(){
+    document.querySelectorAll(".sw").forEach(s=>{
+      s.classList.toggle("sel", (s.dataset.color || "").toLowerCase() === selectedColor.toLowerCase());
+    });
+  }
+
+  // ---------- 数据加载 / 轮询 ----------
+  async function load(){
+    if(!FIREBASE_URL){
+      state = { users: DEFAULT_USERS, marks:{} };
+      $("notice").style.display = "block";
+      render();
+      return;
+    }
+    $("notice").style.display = "none";
+    try{
+      const data = await fetchJson("");
+      if(data && data.users && Object.keys(data.users).length){
+        state = data;
+      } else {
+        // 首次使用：写入默认三位成员
+        state = { users: { ...DEFAULT_USERS }, marks:{} };
+        await patch("users", DEFAULT_USERS);
+      }
+      lastServerJson = JSON.stringify({ users:state.users, marks:state.marks });
+      render();
+    }catch(e){
+      toast("连接数据库失败，请检查网址是否正确");
+    }
+  }
+
+  async function refresh(){
+    if(!FIREBASE_URL || pending.size) return;
+    try{
+      const data = await fetchJson("");
+      const s = JSON.stringify(data || {});
+      if(s !== lastServerJson){
+        lastServerJson = s;
+        state = data || { users:{}, marks:{} };
+        render();
+      }
+    }catch(e){ /* 忽略瞬时失败 */ }
+  }
+
+  function toast(msg){
+    const t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(t._tm);
+    t._tm = setTimeout(()=>t.classList.remove("show"), 2400);
+  }
+
+  // ---------- 事件绑定 ----------
+  $("members").addEventListener("click", e=>{
+    const act = e.target.getAttribute && e.target.getAttribute("data-act");
+    const uid = e.target.getAttribute && e.target.getAttribute("data-uid");
+    if(act==="edit") openModal(uid);
+    if(act==="del") deleteUser(uid);
+  });
+  $("cancelBtn").onclick = ()=>$("mask").classList.remove("show");
+  $("saveBtn").onclick = saveModal;
+  $("nameInput").addEventListener("keydown", e=>{ if(e.key==="Enter") saveModal(); });
+  $("colorInput").addEventListener("input", e=>{
+    selectedColor = e.target.value;
+    updateSwatchSel();
+    $("colorPreview").style.background = selectedColor;
+  });
+  $("mask").addEventListener("click", e=>{ if(e.target === $("mask")) $("mask").classList.remove("show"); });
+
+  // ---------- 启动 ----------
+  buildSwatches();
+  render();
+  load();
+  setInterval(refresh, REFRESH_MS);
+</script>
+</body>
+</html>
