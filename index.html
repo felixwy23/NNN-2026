@@ -263,6 +263,10 @@
   }
 
   // ---------- 状态 ----------
+  function normalize(d){
+    d = d || {};
+    return { users: d.users || {}, marks: d.marks || {} };
+  }
   function statusOf(uid, dkey){
     return (state.marks[dkey] && state.marks[dkey][uid]) || null; // 'done' | 'fail' | null
   }
@@ -442,7 +446,7 @@
     try{
       const data = await fetchJson("");
       if(data && data.users && Object.keys(data.users).length){
-        state = data;
+        state = normalize(data);
       } else {
         // 首次使用：写入默认三位成员
         state = { users: { ...DEFAULT_USERS }, marks:{} };
@@ -463,7 +467,7 @@
       const s = JSON.stringify(data || {});
       if(s !== lastServerJson){
         lastServerJson = s;
-        state = data || { users:{}, marks:{} };
+        state = normalize(data);
         render();
       }
     }catch(e){ /* 忽略瞬时失败 */ }
