@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
 <title>No Nut November 2026</title>
 <style>
   :root{
@@ -450,7 +451,8 @@
       lastServerJson = JSON.stringify({ users:state.users, marks:state.marks });
       render();
     }catch(e){
-      toast("连接数据库失败，请检查网址是否正确");
+      console.error("连接数据库失败：", e);
+      toast("连接数据库失败：" + (e && e.message ? e.message : e));
     }
   }
 
